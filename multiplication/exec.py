@@ -51,6 +51,7 @@ class MainWindow(QWidget):
         # Calculate cell width and height based on page size
         page_width, page_height = A4
         margin = 18 * mm
+        margin_high = 25 * mm
         usable_width = page_width - 2 * margin
         usable_height = page_height - 2 * margin
         cell_width = usable_width / num_cols
@@ -72,25 +73,28 @@ class MainWindow(QWidget):
         # フォントファイルを登録
         pdfmetrics.registerFont(UnicodeCIDFont(fontname))
         # フォントを設定
-        c.setFont(fontname, 30)
+        c.setFont(fontname, 28)
 
         # 題名を追加する
-        c.drawString(20 * mm, 285 * mm, "九九もんだい")
+        c.drawString(20 * mm, 285 * mm, "九九もんだい" + str(num_questions))
 
         # フォントを設定
-        c.setFont(fontname, 20)
+        c.setFont(fontname, 12)
+        # 時間欄を追加する
+        c.drawString(A4[0] / 2, A4[1] - 70, "　　月　　日　（　　　分　　　秒）")
+        # フォントを設定
+        c.setFont(fontname, 18)
         # 名前欄を追加する
-        c.drawString(A4[0] / 2, A4[1] - 40, "名前： ___________")
+        c.drawString(A4[0] / 2, A4[1] - 40, "名前： ___________ \n")
 
         # Draw questions in cells
         for i in range(num_questions):
             row = i // num_cols
             col = i % num_cols
             x = margin + col * cell_width
-            y = page_height - margin - (row + 1) * cell_height
-            # question = f'{i+1}. {random.randint(2, 9)} x {random.randint(2, 9)} ='
+            y = page_height - margin_high - (row + 1) * cell_height
             question = f'{random.randint(1, 9)} x {random.randint(1, 9)} ='
-            c.drawString(x, y, question)
+            c.drawString(x+15, y, question)
         
         # Save the PDF file
         c.save()
