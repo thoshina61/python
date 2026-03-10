@@ -5,7 +5,6 @@
 
 import os
 from reportlab.lib.units import mm
-from reportlab.lib.colors import Color
 
 
 class AppConfig:
@@ -41,10 +40,7 @@ class PDFConfig:
     HEADER_HEIGHT = 55
     QUESTIONS_PER_ROW = 4
     CELL_PADDING = 5
-
-    # グリッド線
-    GRID_COLOR = Color(0.8, 0.8, 0.8)
-    GRID_LINE_WIDTH = 0.5
+    ROW_HEIGHT_RATIO = 1.8
 
 
 class ProblemConfig:
