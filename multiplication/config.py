@@ -3,16 +3,18 @@
 アプリケーションの各種設定値を管理
 """
 
+import os
 from reportlab.lib.units import mm
+from reportlab.lib.colors import Color
 
 
 class AppConfig:
     """アプリケーション設定"""
-    
+
     # アプリケーション情報
     APP_NAME = "掛け算問題作成"
-    APP_VERSION = "2.0"
-    
+    APP_VERSION = "3.0"
+
     # ウィンドウ設定
     WINDOW_WIDTH = 300
     WINDOW_HEIGHT = 200
@@ -22,36 +24,40 @@ class AppConfig:
 
 class PDFConfig:
     """PDF生成設定"""
-    
-    # フォント設定
-    FONT_NAME = "HeiseiKakuGo-W5"
-    TITLE_FONT_SIZE = 28
-    CONTENT_FONT_SIZE = 18
+
+    # フォント設定（等幅TTFフォント）
+    FONT_NAME = "GenShinGothic"
+    FONT_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fonts", "GenShinGothic-Monospace-Medium.ttf")
+    TITLE_FONT_SIZE = 24
+    CONTENT_FONT_SIZE = 16
+    NUMBER_FONT_SIZE = 10
     TIME_FONT_SIZE = 12
-    
+
     # レイアウト設定
-    MARGIN = 18 * mm
-    TOP_MARGIN = 25 * mm
-    HEADER_SPACE = 60  # ヘッダー用スペース
+    MARGIN_LEFT = 15 * mm
+    MARGIN_RIGHT = 15 * mm
+    MARGIN_TOP = 20 * mm
+    MARGIN_BOTTOM = 15 * mm
+    HEADER_HEIGHT = 55
     QUESTIONS_PER_ROW = 4
-    QUESTION_OFFSET_X = 15  # 問題の左側オフセット
-    
-    # タイトル位置
-    TITLE_X = 20 * mm
-    TITLE_Y = 285 * mm
+    CELL_PADDING = 5
+
+    # グリッド線
+    GRID_COLOR = Color(0.8, 0.8, 0.8)
+    GRID_LINE_WIDTH = 0.5
 
 
 class ProblemConfig:
     """問題生成設定"""
-    
+
     # 数値範囲
     MIN_NUMBER = 1
     MAX_NUMBER = 9
-    
+
     # デフォルト値
     DEFAULT_QUESTIONS = 20
     MAX_QUESTIONS = 100
-    
+
     # ファイル名設定
     FILENAME_PREFIX = "multiplication_"
     FILENAME_SUFFIX = ".pdf"
