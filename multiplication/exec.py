@@ -20,7 +20,6 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.lib.units import mm
 from reportlab.lib.pagesizes import A4
-from reportlab.lib.colors import Color
 
 
 class Config:
@@ -43,9 +42,8 @@ class Config:
     QUESTIONS_PER_ROW = 4
     CELL_PADDING = 5  # セル内余白
 
-    # グリッド線の色（薄いグレー）
-    GRID_COLOR = Color(0.8, 0.8, 0.8)
-    GRID_LINE_WIDTH = 0.5
+    # 行の高さ係数（フォントサイズに対する倍率）
+    ROW_HEIGHT_RATIO = 1.8
 
     # 問題設定
     MIN_NUMBER = 1
@@ -84,13 +82,11 @@ class PDFGenerator:
 
             # 問題ページ作成
             self._create_header(c, num_questions, is_answer=False)
-            self._draw_grid(c, num_questions, layout)
             self._create_questions_page(c, questions, layout, show_answers=False)
 
             # 解答ページ作成
             c.showPage()
             self._create_header(c, num_questions, is_answer=True)
-            self._draw_grid(c, num_questions, layout)
             self._create_questions_page(c, questions, layout, show_answers=True)
 
             c.save()
@@ -137,7 +133,7 @@ class PDFGenerator:
         return questions
 
     def _calculate_layout(self, num_questions: int) -> dict:
-        """レイアウト情報を計算する"""
+        """レイアウト情報を計算する（1ページに収まるよう動的にフォントサイズ調整）"""
         num_cols = min(num_questions, self.config.QUESTIONS_PER_ROW)
         num_rows = (num_questions + num_cols - 1) // num_cols
 
@@ -146,23 +142,24 @@ class PDFGenerator:
         usable_height = page_height - self.config.MARGIN_TOP - self.config.MARGIN_BOTTOM - self.config.HEADER_HEIGHT
 
         cell_width = usable_width / num_cols
-        cell_height = usable_height / num_rows
 
-        # フォントサイズの動的調整（行が多い場合は縮小）
-        content_font_size = self.config.CONTENT_FONT_SIZE
-        if num_rows > 10:
-            content_font_size = max(10, int(content_font_size * 10 / num_rows))
+        # 1ページに収まる最大フォントサイズを算出
+        max_font_from_height = usable_height / (num_rows * self.config.ROW_HEIGHT_RATIO)
+        content_font_size = min(self.config.CONTENT_FONT_SIZE, max_font_from_height)
+        content_font_size = max(8, content_font_size)  # 最低8pt
+
+        row_height = content_font_size * self.config.ROW_HEIGHT_RATIO
 
         return {
             'num_rows': num_rows,
             'num_cols': num_cols,
             'cell_width': cell_width,
-            'cell_height': cell_height,
+            'row_height': row_height,
             'page_width': page_width,
             'page_height': page_height,
             'content_font_size': content_font_size,
-            'grid_top': page_height - self.config.MARGIN_TOP - self.config.HEADER_HEIGHT,
-            'grid_left': self.config.MARGIN_LEFT,
+            'area_top': page_height - self.config.MARGIN_TOP - self.config.HEADER_HEIGHT,
+            'area_left': self.config.MARGIN_LEFT,
         }
 
     def _create_header(self, c: canvas.Canvas, num_questions: int, is_answer: bool = False) -> None:
@@ -190,55 +187,29 @@ class PDFGenerator:
             c.drawString(self.config.MARGIN_LEFT, info_y,
                          "　　月　　日　　タイム（　　分　　秒）")
 
-    def _draw_grid(self, c: canvas.Canvas, num_questions: int, layout: dict) -> None:
-        """問題エリアにグリッド線を描画する"""
-        c.setStrokeColor(self.config.GRID_COLOR)
-        c.setLineWidth(self.config.GRID_LINE_WIDTH)
-
-        grid_top = layout['grid_top']
-        grid_left = layout['grid_left']
-        grid_right = grid_left + layout['num_cols'] * layout['cell_width']
-        grid_bottom = grid_top - layout['num_rows'] * layout['cell_height']
-
-        # 横線
-        for row in range(layout['num_rows'] + 1):
-            y = grid_top - row * layout['cell_height']
-            c.line(grid_left, y, grid_right, y)
-
-        # 縦線
-        for col in range(layout['num_cols'] + 1):
-            x = grid_left + col * layout['cell_width']
-            c.line(x, grid_top, x, grid_bottom)
-
     def _create_questions_page(self, c: canvas.Canvas, questions: list, layout: dict,
                                show_answers: bool = False) -> None:
-        """問題（または解答）を配置する"""
+        """問題（または解答）を配置する（問題番号はインライン表示）"""
+        font_size = layout['content_font_size']
+
         for i, (num1, num2) in enumerate(questions):
             row = i // layout['num_cols']
             col = i % layout['num_cols']
 
-            cell_x = layout['grid_left'] + col * layout['cell_width']
-            cell_y = layout['grid_top'] - row * layout['cell_height']
+            text_x = layout['area_left'] + col * layout['cell_width'] + self.config.CELL_PADDING
+            text_y = layout['area_top'] - (row + 1) * layout['row_height'] + font_size * 0.3
 
-            # 問題番号（セル左上に小さく）
-            c.setFont(self.config.FONT_NAME, self.config.NUMBER_FONT_SIZE)
-            c.setFillColorRGB(0.5, 0.5, 0.5)
-            c.drawString(cell_x + 3, cell_y - 12, f"({i + 1})")
-
-            # 問題テキスト（セル中央付近）
-            c.setFont(self.config.FONT_NAME, layout['content_font_size'])
+            # 問題番号＋問題テキストを1行で描画
+            c.setFont(self.config.FONT_NAME, font_size)
             c.setFillColorRGB(0, 0, 0)
-
-            text_x = cell_x + self.config.CELL_PADDING + 8
-            text_y = cell_y - layout['cell_height'] / 2 - layout['content_font_size'] / 3
 
             if show_answers:
                 answer = num1 * num2
-                question_text = f"{num1} × {num2} = {answer}"
+                line = f"({i + 1}) {num1} × {num2} = {answer}"
             else:
-                question_text = f"{num1} × {num2} ="
+                line = f"({i + 1}) {num1} × {num2} ="
 
-            c.drawString(text_x, text_y, question_text)
+            c.drawString(text_x, text_y, line)
 
     def _generate_question(self) -> str:
         """掛け算問題を生成する（後方互換性のため残す）"""

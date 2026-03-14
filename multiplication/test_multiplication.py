@@ -25,7 +25,7 @@ class TestPDFGenerator(unittest.TestCase):
         self.assertEqual(layout['num_cols'], 4)  # 1行4問
         self.assertEqual(layout['num_rows'], 3)  # 3行必要
         self.assertGreater(layout['cell_width'], 0)
-        self.assertGreater(layout['cell_height'], 0)
+        self.assertGreater(layout['row_height'], 0)
 
     def test_calculate_layout_edge_cases(self):
         """エッジケースのレイアウト計算テスト"""
@@ -50,10 +50,10 @@ class TestPDFGenerator(unittest.TestCase):
         layout_small = self.pdf_generator._calculate_layout(8)
         self.assertEqual(layout_small['content_font_size'], self.config.CONTENT_FONT_SIZE)
 
-        # 多い問題数：フォントサイズ縮小
+        # 多い問題数：フォントサイズ縮小（1ページに収めるため）
         layout_large = self.pdf_generator._calculate_layout(100)
         self.assertLess(layout_large['content_font_size'], self.config.CONTENT_FONT_SIZE)
-        self.assertGreaterEqual(layout_large['content_font_size'], 10)
+        self.assertGreaterEqual(layout_large['content_font_size'], 8)
 
     def test_generate_unique_questions_no_duplicates(self):
         """重複のない問題生成テスト"""
