@@ -58,7 +58,7 @@ class PDFGenerator:
         self.config = config
         self._font_registered = False
 
-    def generate_worksheet(self, num_questions: int, output_filename: str) -> bool:
+    def generate_worksheet(self, num_questions: int, output_filename: str, include_answers: bool = True) -> bool:
         """
         掛け算問題のワークシートPDFを生成する（問題ページ＋解答ページ）
 
@@ -89,13 +89,14 @@ class PDFGenerator:
                 self._create_questions_page(c, page_questions, layout, show_answers=False,
                                             start_number=page_idx * max_per_page)
 
-            # ページごとに分割して解答ページを作成
-            for page_idx, page_questions in enumerate(pages):
-                c.showPage()
-                layout = self._calculate_layout(len(page_questions))
-                self._create_header(c, num_questions, is_answer=True)
-                self._create_questions_page(c, page_questions, layout, show_answers=True,
-                                            start_number=page_idx * max_per_page)
+            # 解答ページを作成（オプション）
+            if include_answers:
+                for page_idx, page_questions in enumerate(pages):
+                    c.showPage()
+                    layout = self._calculate_layout(len(page_questions))
+                    self._create_header(c, num_questions, is_answer=True)
+                    self._create_questions_page(c, page_questions, layout, show_answers=True,
+                                                start_number=page_idx * max_per_page)
 
             c.save()
             return True
@@ -236,7 +237,7 @@ class PDFGenerator:
 
 def _create_gui_classes():
     """PyQt5が利用可能な場合にGUIクラスを定義する"""
-    from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QLabel, QLineEdit, QMessageBox, QVBoxLayout
+    from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QLabel, QLineEdit, QMessageBox, QVBoxLayout, QCheckBox
     from PyQt5.QtCore import Qt
 
     class MainWindow(QWidget):
@@ -263,6 +264,10 @@ def _create_gui_classes():
             self.num_questions_edit.setAlignment(Qt.AlignCenter)
             layout.addWidget(self.num_questions_edit)
 
+            self.answer_checkbox = QCheckBox('解答ページを含める')
+            self.answer_checkbox.setChecked(True)
+            layout.addWidget(self.answer_checkbox)
+
             self.generate_button = QPushButton('問題作成')
             self.generate_button.clicked.connect(self.on_generate_clicked)
             layout.addWidget(self.generate_button)
@@ -278,8 +283,9 @@ def _create_gui_classes():
 
                 filename = self._generate_filename()
 
-                if self.pdf_generator.generate_worksheet(num_questions, filename):
-                    self._show_success_message(filename)
+                include_answers = self.answer_checkbox.isChecked()
+                if self.pdf_generator.generate_worksheet(num_questions, filename, include_answers):
+                    self._show_success_message(filename, include_answers)
                 else:
                     self._show_error_message("PDF生成中にエラーが発生しました。")
 
@@ -306,12 +312,13 @@ def _create_gui_classes():
             timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
             return f"multiplication_{timestamp}.pdf"
 
-        def _show_success_message(self, filename: str) -> None:
+        def _show_success_message(self, filename: str, include_answers: bool = True) -> None:
             """成功メッセージを表示する"""
             msg = QMessageBox()
             msg.setIcon(QMessageBox.Information)
             msg.setWindowTitle('完了')
-            msg.setText(f'問題を作成しました: {filename}\n（解答ページ付き）')
+            answer_info = "（解答ページ付き）" if include_answers else "（解答ページなし）"
+            msg.setText(f'問題を作成しました: {filename}\n{answer_info}')
             msg.exec_()
 
         def _show_error_message(self, message: str) -> None:
