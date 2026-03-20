@@ -211,8 +211,12 @@ class PDFGenerator:
 
             c.setFillColorRGB(0, 0, 0)
 
-            # 問題番号を小さいフォントで描画
-            number_text = f"({start_number + i + 1})"
+            # 問題番号を小さいフォントで描画（1桁はスペース追加で桁揃え）
+            question_number = start_number + i + 1
+            if question_number < 10:
+                number_text = f"({question_number})  "
+            else:
+                number_text = f"({question_number}) "
             c.setFont(self.config.FONT_NAME, number_font_size)
             c.drawString(text_x, text_y, number_text)
             number_width = c.stringWidth(number_text, self.config.FONT_NAME, number_font_size)
