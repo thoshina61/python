@@ -29,7 +29,7 @@ class Config:
     FONT_NAME = "GenShinGothic"
     FONT_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fonts", "GenShinGothic-Monospace-Medium.ttf")
     TITLE_FONT_SIZE = 24
-    CONTENT_FONT_SIZE = 20
+    CONTENT_FONT_SIZE = 28
     NUMBER_FONT_SIZE = 10
     TIME_FONT_SIZE = 12
 
@@ -43,7 +43,7 @@ class Config:
     CELL_PADDING = 5  # セル内余白
 
     # 行の高さ係数（フォントサイズに対する倍率）
-    ROW_HEIGHT_RATIO = 1.8
+    ROW_HEIGHT_RATIO = 1.4
 
     # 問題設定
     MIN_NUMBER = 1

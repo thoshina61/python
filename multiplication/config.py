@@ -28,7 +28,7 @@ class PDFConfig:
     FONT_NAME = "GenShinGothic"
     FONT_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fonts", "GenShinGothic-Monospace-Medium.ttf")
     TITLE_FONT_SIZE = 24
-    CONTENT_FONT_SIZE = 20
+    CONTENT_FONT_SIZE = 28
     NUMBER_FONT_SIZE = 10
     TIME_FONT_SIZE = 12
 
@@ -40,7 +40,7 @@ class PDFConfig:
     HEADER_HEIGHT = 55
     QUESTIONS_PER_ROW = 4
     CELL_PADDING = 5
-    ROW_HEIGHT_RATIO = 1.8
+    ROW_HEIGHT_RATIO = 1.4
 
 
 class ProblemConfig:
