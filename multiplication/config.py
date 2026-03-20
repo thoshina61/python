@@ -33,8 +33,8 @@ class PDFConfig:
     TIME_FONT_SIZE = 12
 
     # レイアウト設定
-    MARGIN_LEFT = 15 * mm
-    MARGIN_RIGHT = 15 * mm
+    MARGIN_LEFT = 10 * mm
+    MARGIN_RIGHT = 10 * mm
     MARGIN_TOP = 20 * mm
     MARGIN_BOTTOM = 15 * mm
     HEADER_HEIGHT = 55
