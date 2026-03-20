@@ -70,6 +70,8 @@ class PDFGenerator:
             生成成功の場合True、失敗の場合False
         """
         try:
+            max_per_page = 100
+
             # 重複のない問題リストを生成
             questions = self._generate_unique_questions(num_questions)
 
@@ -77,17 +79,23 @@ class PDFGenerator:
             c = canvas.Canvas(output_filename, pagesize=A4)
             self._setup_fonts(c)
 
-            # レイアウト計算
-            layout = self._calculate_layout(num_questions)
+            # ページごとに分割して問題ページを作成
+            pages = [questions[i:i + max_per_page] for i in range(0, len(questions), max_per_page)]
+            for page_idx, page_questions in enumerate(pages):
+                if page_idx > 0:
+                    c.showPage()
+                layout = self._calculate_layout(len(page_questions))
+                self._create_header(c, num_questions, is_answer=False)
+                self._create_questions_page(c, page_questions, layout, show_answers=False,
+                                            start_number=page_idx * max_per_page)
 
-            # 問題ページ作成
-            self._create_header(c, num_questions, is_answer=False)
-            self._create_questions_page(c, questions, layout, show_answers=False)
-
-            # 解答ページ作成
-            c.showPage()
-            self._create_header(c, num_questions, is_answer=True)
-            self._create_questions_page(c, questions, layout, show_answers=True)
+            # ページごとに分割して解答ページを作成
+            for page_idx, page_questions in enumerate(pages):
+                c.showPage()
+                layout = self._calculate_layout(len(page_questions))
+                self._create_header(c, num_questions, is_answer=True)
+                self._create_questions_page(c, page_questions, layout, show_answers=True,
+                                            start_number=page_idx * max_per_page)
 
             c.save()
             return True
@@ -188,7 +196,7 @@ class PDFGenerator:
                          "　　月　　日　　タイム（　　分　　秒）")
 
     def _create_questions_page(self, c: canvas.Canvas, questions: list, layout: dict,
-                               show_answers: bool = False) -> None:
+                               show_answers: bool = False, start_number: int = 0) -> None:
         """問題（または解答）を配置する（問題番号と数式を別サイズで描画）"""
         font_size = layout['content_font_size']
         number_font_size = self.config.NUMBER_FONT_SIZE
@@ -203,7 +211,7 @@ class PDFGenerator:
             c.setFillColorRGB(0, 0, 0)
 
             # 問題番号を小さいフォントで描画
-            number_text = f"({i + 1})"
+            number_text = f"({start_number + i + 1})"
             c.setFont(self.config.FONT_NAME, number_font_size)
             c.drawString(text_x, text_y, number_text)
             number_width = c.stringWidth(number_text, self.config.FONT_NAME, number_font_size)
@@ -285,8 +293,8 @@ def _create_gui_classes():
                 if num_questions <= 0:
                     self._show_error_message("問題数は1以上の数値を入力してください。")
                     return None
-                if num_questions > 100:
-                    self._show_error_message("問題数は100以下にしてください。")
+                if num_questions > 1000:
+                    self._show_error_message("問題数は1000以下にしてください。")
                     return None
                 return num_questions
             except ValueError:

@@ -52,7 +52,7 @@ class ProblemConfig:
 
     # デフォルト値
     DEFAULT_QUESTIONS = 20
-    MAX_QUESTIONS = 100
+    MAX_QUESTIONS = 1000
 
     # ファイル名設定
     FILENAME_PREFIX = "multiplication_"
