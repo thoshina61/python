@@ -28,7 +28,7 @@ class PDFConfig:
     FONT_NAME = "GenShinGothic"
     FONT_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fonts", "GenShinGothic-Monospace-Medium.ttf")
     TITLE_FONT_SIZE = 24
-    CONTENT_FONT_SIZE = 16
+    CONTENT_FONT_SIZE = 20
     NUMBER_FONT_SIZE = 10
     TIME_FONT_SIZE = 12
 
