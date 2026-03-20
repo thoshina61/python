@@ -30,7 +30,7 @@ class Config:
     FONT_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fonts", "GenShinGothic-Monospace-Medium.ttf")
     TITLE_FONT_SIZE = 24
     CONTENT_FONT_SIZE = 28
-    NUMBER_FONT_SIZE = 10
+    NUMBER_FONT_SIZE = 12
     TIME_FONT_SIZE = 12
 
     # レイアウト設定
@@ -211,14 +211,16 @@ class PDFGenerator:
 
             c.setFillColorRGB(0, 0, 0)
 
-            # 問題番号を小さいフォントで描画（1桁はスペース追加で桁揃え）
+            # 問題番号を小さいフォントで描画（1桁はスペース追加で桁揃え、縦方向中央揃え）
             question_number = start_number + i + 1
             if question_number < 10:
                 number_text = f"({question_number})  "
             else:
                 number_text = f"({question_number}) "
             c.setFont(self.config.FONT_NAME, number_font_size)
-            c.drawString(text_x, text_y, number_text)
+            # 数式フォントに対して縦方向中央揃え
+            number_y_offset = (font_size - number_font_size) / 2
+            c.drawString(text_x, text_y + number_y_offset, number_text)
             number_width = c.stringWidth(number_text, self.config.FONT_NAME, number_font_size)
 
             # 数式を大きいフォントで描画（番号の直後、余白を最小限に）
