@@ -30,7 +30,7 @@ class Config:
     FONT_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fonts", "GenShinGothic-Monospace-Medium.ttf")
     TITLE_FONT_SIZE = 24
     CONTENT_FONT_SIZE = 28
-    NUMBER_FONT_SIZE = 10
+    NUMBER_FONT_SIZE = 20
     TIME_FONT_SIZE = 12
 
     # レイアウト設定
@@ -189,8 +189,9 @@ class PDFGenerator:
 
     def _create_questions_page(self, c: canvas.Canvas, questions: list, layout: dict,
                                show_answers: bool = False) -> None:
-        """問題（または解答）を配置する（問題番号はインライン表示）"""
+        """問題（または解答）を配置する（問題番号と数式を別サイズで描画）"""
         font_size = layout['content_font_size']
+        number_font_size = self.config.NUMBER_FONT_SIZE
 
         for i, (num1, num2) in enumerate(questions):
             row = i // layout['num_cols']
@@ -199,17 +200,24 @@ class PDFGenerator:
             text_x = layout['area_left'] + col * layout['cell_width'] + self.config.CELL_PADDING
             text_y = layout['area_top'] - (row + 1) * layout['row_height'] + font_size * 0.3
 
-            # 問題番号＋問題テキストを1行で描画
-            c.setFont(self.config.FONT_NAME, font_size)
             c.setFillColorRGB(0, 0, 0)
 
+            # 問題番号を小さいフォントで描画
+            number_text = f"({i + 1})"
+            c.setFont(self.config.FONT_NAME, number_font_size)
+            c.drawString(text_x, text_y, number_text)
+            number_width = c.stringWidth(number_text, self.config.FONT_NAME, number_font_size)
+
+            # 数式を大きいフォントで描画（番号の直後、余白を最小限に）
+            c.setFont(self.config.FONT_NAME, font_size)
+            gap = 2  # 番号と数式の間隔（pt）
             if show_answers:
                 answer = num1 * num2
-                line = f"({i + 1}) {num1} × {num2} = {answer}"
+                math_text = f"{num1}×{num2}={answer}"
             else:
-                line = f"({i + 1}) {num1} × {num2} ="
+                math_text = f"{num1}×{num2}="
 
-            c.drawString(text_x, text_y, line)
+            c.drawString(text_x + number_width + gap, text_y, math_text)
 
     def _generate_question(self) -> str:
         """掛け算問題を生成する（後方互換性のため残す）"""
