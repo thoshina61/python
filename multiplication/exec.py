@@ -29,13 +29,13 @@ class Config:
     FONT_NAME = "GenShinGothic"
     FONT_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fonts", "GenShinGothic-Monospace-Medium.ttf")
     TITLE_FONT_SIZE = 24
-    CONTENT_FONT_SIZE = 20
-    NUMBER_FONT_SIZE = 10
+    CONTENT_FONT_SIZE = 28
+    NUMBER_FONT_SIZE = 12
     TIME_FONT_SIZE = 12
 
     # レイアウト設定
-    MARGIN_LEFT = 15 * mm
-    MARGIN_RIGHT = 15 * mm
+    MARGIN_LEFT = 10 * mm
+    MARGIN_RIGHT = 10 * mm
     MARGIN_TOP = 20 * mm
     MARGIN_BOTTOM = 15 * mm
     HEADER_HEIGHT = 55  # ヘッダー領域の高さ
@@ -43,7 +43,7 @@ class Config:
     CELL_PADDING = 5  # セル内余白
 
     # 行の高さ係数（フォントサイズに対する倍率）
-    ROW_HEIGHT_RATIO = 1.8
+    ROW_HEIGHT_RATIO = 1.4
 
     # 問題設定
     MIN_NUMBER = 1
@@ -58,7 +58,7 @@ class PDFGenerator:
         self.config = config
         self._font_registered = False
 
-    def generate_worksheet(self, num_questions: int, output_filename: str) -> bool:
+    def generate_worksheet(self, num_questions: int, output_filename: str, include_answers: bool = True) -> bool:
         """
         掛け算問題のワークシートPDFを生成する（問題ページ＋解答ページ）
 
@@ -70,6 +70,8 @@ class PDFGenerator:
             生成成功の場合True、失敗の場合False
         """
         try:
+            max_per_page = 100
+
             # 重複のない問題リストを生成
             questions = self._generate_unique_questions(num_questions)
 
@@ -77,17 +79,24 @@ class PDFGenerator:
             c = canvas.Canvas(output_filename, pagesize=A4)
             self._setup_fonts(c)
 
-            # レイアウト計算
-            layout = self._calculate_layout(num_questions)
+            # ページごとに分割して問題ページを作成
+            pages = [questions[i:i + max_per_page] for i in range(0, len(questions), max_per_page)]
+            for page_idx, page_questions in enumerate(pages):
+                if page_idx > 0:
+                    c.showPage()
+                layout = self._calculate_layout(len(page_questions))
+                self._create_header(c, num_questions, is_answer=False)
+                self._create_questions_page(c, page_questions, layout, show_answers=False,
+                                            start_number=page_idx * max_per_page)
 
-            # 問題ページ作成
-            self._create_header(c, num_questions, is_answer=False)
-            self._create_questions_page(c, questions, layout, show_answers=False)
-
-            # 解答ページ作成
-            c.showPage()
-            self._create_header(c, num_questions, is_answer=True)
-            self._create_questions_page(c, questions, layout, show_answers=True)
+            # 解答ページを作成（オプション）
+            if include_answers:
+                for page_idx, page_questions in enumerate(pages):
+                    c.showPage()
+                    layout = self._calculate_layout(len(page_questions))
+                    self._create_header(c, num_questions, is_answer=True)
+                    self._create_questions_page(c, page_questions, layout, show_answers=True,
+                                                start_number=page_idx * max_per_page)
 
             c.save()
             return True
@@ -188,9 +197,10 @@ class PDFGenerator:
                          "　　月　　日　　タイム（　　分　　秒）")
 
     def _create_questions_page(self, c: canvas.Canvas, questions: list, layout: dict,
-                               show_answers: bool = False) -> None:
-        """問題（または解答）を配置する（問題番号はインライン表示）"""
+                               show_answers: bool = False, start_number: int = 0) -> None:
+        """問題（または解答）を配置する（問題番号と数式を別サイズで描画）"""
         font_size = layout['content_font_size']
+        number_font_size = self.config.NUMBER_FONT_SIZE
 
         for i, (num1, num2) in enumerate(questions):
             row = i // layout['num_cols']
@@ -199,17 +209,30 @@ class PDFGenerator:
             text_x = layout['area_left'] + col * layout['cell_width'] + self.config.CELL_PADDING
             text_y = layout['area_top'] - (row + 1) * layout['row_height'] + font_size * 0.3
 
-            # 問題番号＋問題テキストを1行で描画
-            c.setFont(self.config.FONT_NAME, font_size)
             c.setFillColorRGB(0, 0, 0)
 
+            # 問題番号を小さいフォントで描画（1桁はスペース追加で桁揃え、縦方向中央揃え）
+            question_number = start_number + i + 1
+            if question_number < 10:
+                number_text = f"({question_number})  "
+            else:
+                number_text = f"({question_number}) "
+            c.setFont(self.config.FONT_NAME, number_font_size)
+            # 数式フォントに対して縦方向中央揃え
+            number_y_offset = (font_size - number_font_size) / 2
+            c.drawString(text_x, text_y + number_y_offset, number_text)
+            number_width = c.stringWidth(number_text, self.config.FONT_NAME, number_font_size)
+
+            # 数式を大きいフォントで描画（番号の直後、余白を最小限に）
+            c.setFont(self.config.FONT_NAME, font_size)
+            gap = 2  # 番号と数式の間隔（pt）
             if show_answers:
                 answer = num1 * num2
-                line = f"({i + 1}) {num1} × {num2} = {answer}"
+                math_text = f"{num1}×{num2} ={answer}"
             else:
-                line = f"({i + 1}) {num1} × {num2} ="
+                math_text = f"{num1}×{num2} ="
 
-            c.drawString(text_x, text_y, line)
+            c.drawString(text_x + number_width + gap, text_y, math_text)
 
     def _generate_question(self) -> str:
         """掛け算問題を生成する（後方互換性のため残す）"""
@@ -220,7 +243,7 @@ class PDFGenerator:
 
 def _create_gui_classes():
     """PyQt5が利用可能な場合にGUIクラスを定義する"""
-    from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QLabel, QLineEdit, QMessageBox, QVBoxLayout
+    from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QLabel, QLineEdit, QMessageBox, QVBoxLayout, QCheckBox
     from PyQt5.QtCore import Qt
 
     class MainWindow(QWidget):
@@ -247,6 +270,10 @@ def _create_gui_classes():
             self.num_questions_edit.setAlignment(Qt.AlignCenter)
             layout.addWidget(self.num_questions_edit)
 
+            self.answer_checkbox = QCheckBox('解答ページを含める')
+            self.answer_checkbox.setChecked(True)
+            layout.addWidget(self.answer_checkbox)
+
             self.generate_button = QPushButton('問題作成')
             self.generate_button.clicked.connect(self.on_generate_clicked)
             layout.addWidget(self.generate_button)
@@ -262,8 +289,9 @@ def _create_gui_classes():
 
                 filename = self._generate_filename()
 
-                if self.pdf_generator.generate_worksheet(num_questions, filename):
-                    self._show_success_message(filename)
+                include_answers = self.answer_checkbox.isChecked()
+                if self.pdf_generator.generate_worksheet(num_questions, filename, include_answers):
+                    self._show_success_message(filename, include_answers)
                 else:
                     self._show_error_message("PDF生成中にエラーが発生しました。")
 
@@ -277,8 +305,8 @@ def _create_gui_classes():
                 if num_questions <= 0:
                     self._show_error_message("問題数は1以上の数値を入力してください。")
                     return None
-                if num_questions > 100:
-                    self._show_error_message("問題数は100以下にしてください。")
+                if num_questions > 1000:
+                    self._show_error_message("問題数は1000以下にしてください。")
                     return None
                 return num_questions
             except ValueError:
@@ -290,12 +318,13 @@ def _create_gui_classes():
             timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
             return f"multiplication_{timestamp}.pdf"
 
-        def _show_success_message(self, filename: str) -> None:
+        def _show_success_message(self, filename: str, include_answers: bool = True) -> None:
             """成功メッセージを表示する"""
             msg = QMessageBox()
             msg.setIcon(QMessageBox.Information)
             msg.setWindowTitle('完了')
-            msg.setText(f'問題を作成しました: {filename}\n（解答ページ付き）')
+            answer_info = "（解答ページ付き）" if include_answers else "（解答ページなし）"
+            msg.setText(f'問題を作成しました: {filename}\n{answer_info}')
             msg.exec_()
 
         def _show_error_message(self, message: str) -> None:

@@ -28,19 +28,19 @@ class PDFConfig:
     FONT_NAME = "GenShinGothic"
     FONT_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fonts", "GenShinGothic-Monospace-Medium.ttf")
     TITLE_FONT_SIZE = 24
-    CONTENT_FONT_SIZE = 16
-    NUMBER_FONT_SIZE = 10
+    CONTENT_FONT_SIZE = 28
+    NUMBER_FONT_SIZE = 12
     TIME_FONT_SIZE = 12
 
     # レイアウト設定
-    MARGIN_LEFT = 15 * mm
-    MARGIN_RIGHT = 15 * mm
+    MARGIN_LEFT = 10 * mm
+    MARGIN_RIGHT = 10 * mm
     MARGIN_TOP = 20 * mm
     MARGIN_BOTTOM = 15 * mm
     HEADER_HEIGHT = 55
     QUESTIONS_PER_ROW = 4
     CELL_PADDING = 5
-    ROW_HEIGHT_RATIO = 1.8
+    ROW_HEIGHT_RATIO = 1.4
 
 
 class ProblemConfig:
@@ -52,7 +52,7 @@ class ProblemConfig:
 
     # デフォルト値
     DEFAULT_QUESTIONS = 20
-    MAX_QUESTIONS = 100
+    MAX_QUESTIONS = 1000
 
     # ファイル名設定
     FILENAME_PREFIX = "multiplication_"
