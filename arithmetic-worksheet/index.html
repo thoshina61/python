@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>さんすうプリントメーカー</title>
+  <meta name="description" content="たし算・ひき算・かけ算・わり算の計算プリントを、ブラウザだけで無料で作って印刷できるツールです。九九の段指定、くり上がり・くり下がり、あまりのあるわり算、虫食い算、解答ページ付き。">
+  <meta property="og:title" content="さんすうプリントメーカー">
+  <meta property="og:description" content="四則演算の計算プリントをブラウザで作って印刷。解答ページ付き・無料・登録不要。">
+  <meta property="og:type" content="website">
+  <meta name="theme-color" content="#2f6f5e">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232f6f5e'/%3E%3Cpath d='M18 32h28M32 18v28' stroke='%23fff' stroke-width='7' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&display=swap">
+  <link rel="stylesheet" href="style.css">
+  <script type="module" src="js/app.js"></script>
+</head>
+<body>
+  <header class="app-header">
+    <h1>さんすうプリントメーカー</h1>
+    <p>たし算・ひき算・かけ算・わり算の計算プリントを作って、そのまま印刷できます。</p>
+  </header>
+
+  <main class="app">
+    <form id="settings" class="panel" autocomplete="off">
+      <section class="group">
+        <h2>しゅるい</h2>
+        <fieldset class="chips chips-ops">
+          <legend class="visually-hidden">出題する計算</legend>
+          <input type="checkbox" id="op-add" name="op" value="add"><label for="op-add">たし算</label>
+          <input type="checkbox" id="op-sub" name="op" value="sub"><label for="op-sub">ひき算</label>
+          <input type="checkbox" id="op-mul" name="op" value="mul"><label for="op-mul">かけ算</label>
+          <input type="checkbox" id="op-div" name="op" value="div"><label for="op-div">わり算</label>
+        </fieldset>
+        <p class="hint">複数えらぶと、まぜて出題します。</p>
+        <div id="op-panels"></div>
+      </section>
+
+      <section class="group">
+        <h2>問題</h2>
+        <div class="row">
+          <div class="field">
+            <label for="perSheet">1まいの問題数</label>
+            <input type="number" id="perSheet" name="perSheet" min="1" max="100" inputmode="numeric">
+          </div>
+          <div class="field">
+            <label for="sheets">まい数</label>
+            <input type="number" id="sheets" name="sheets" min="1" max="20" inputmode="numeric">
+          </div>
+        </div>
+        <fieldset class="chips">
+          <legend>空らん（虫食い算）</legend>
+          <input type="radio" id="blank-answer" name="blank" value="answer"><label for="blank-answer">こたえ</label>
+          <input type="radio" id="blank-operand" name="blank" value="operand"><label for="blank-operand">式の中</label>
+          <input type="radio" id="blank-mixed" name="blank" value="mixed"><label for="blank-mixed">まぜる</label>
+        </fieldset>
+      </section>
+
+      <section class="group">
+        <h2>レイアウト</h2>
+        <div class="row">
+          <div class="field">
+            <label for="cols">列数</label>
+            <select id="cols" name="cols">
+              <option value="auto">自動</option>
+              <option value="1">1列</option>
+              <option value="2">2列</option>
+              <option value="3">3列</option>
+              <option value="4">4列</option>
+              <option value="5">5列</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="size">文字の大きさ</label>
+            <select id="size" name="size">
+              <option value="auto">自動</option>
+              <option value="large">大</option>
+              <option value="medium">中</option>
+              <option value="small">小</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="flow">ならび順</label>
+            <select id="flow" name="flow">
+              <option value="column">たて</option>
+              <option value="row">よこ</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label for="title">タイトル</label>
+          <input type="text" id="title" name="title" maxlength="60">
+        </div>
+        <fieldset class="checks">
+          <legend>表示する項目</legend>
+          <label class="check"><input type="checkbox" name="header-name"> なまえ</label>
+          <label class="check"><input type="checkbox" name="header-date"> 日付</label>
+          <label class="check"><input type="checkbox" name="header-time"> タイム</label>
+          <label class="check"><input type="checkbox" name="header-score"> 点数</label>
+          <label class="check"><input type="checkbox" name="numbers"> 問題番号</label>
+          <label class="check"><input type="checkbox" name="answers"> 解答ページ</label>
+        </fieldset>
+      </section>
+
+      <div class="actions">
+        <button type="button" id="print" class="btn btn-primary">印刷 / PDFで保存</button>
+        <button type="button" id="shuffle" class="btn">べつの問題にする</button>
+        <button type="button" id="share" class="btn btn-quiet">この設定のリンクをコピー</button>
+        <button type="button" id="reset" class="btn btn-quiet">設定をもとにもどす</button>
+      </div>
+      <p class="hint">
+        PDFにするには、印刷画面で保存先を「PDFに保存」にしてください。用紙はA4・余白なし（または「デフォルト」）、倍率100%がおすすめです。
+      </p>
+    </form>
+
+    <section class="preview" aria-label="プレビュー">
+      <p id="status" class="status" role="status" aria-live="polite"></p>
+      <div id="sheet-list" class="sheets"></div>
+    </section>
+  </main>
+
+  <footer class="app-footer">
+    <p>入力した設定はこのブラウザの中だけで使われ、どこにも送信されません。</p>
+    <p><a href="https://github.com/thoshina61/python/tree/master/arithmetic-worksheet">ソースコード（MIT License）</a></p>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,12 @@
+{
+  "name": "arithmetic-worksheet",
+  "version": "1.0.0",
+  "private": true,
+  "description": "四則演算の計算プリントをブラウザで作成・印刷するツール",
+  "type": "module",
+  "license": "MIT",
+  "scripts": {
+    "test": "node --test tests/*.test.mjs",
+    "start": "python3 -m http.server 8000"
+  }
+}

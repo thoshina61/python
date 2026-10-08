@@ -2,6 +2,9 @@
 
 九九の問題を自動生成してPDFファイルとして出力するPyQt5アプリケーションです。
 
+> **Web版があります:** 四則演算・段の指定・虫食い算などに対応したブラウザ版を
+> [`../arithmetic-worksheet/`](../arithmetic-worksheet/) で公開しています。インストール不要で使えるので、配布にはそちらをおすすめします。
+
 ## 機能
 
 - 指定した問題数の掛け算問題をPDFで作成
@@ -41,13 +44,13 @@
 
 ```
 multiplication/
-├── exec.py                      # 元のコード
-├── exec_refactored.py          # リファクタリング済みメインファイル
-├── config.py                   # 設定ファイル
-├── test_multiplication.py      # テストファイル
-├── README.md                   # このファイル
-└── fonts/                      # フォントディレクトリ
-    └── GenShinGothic-Monospace-Medium.ttf
+├── exec.py                      # メインファイル（GUI・PDF生成）
+├── exec_original.py             # リファクタリング前の元コード（参考用）
+├── config.py                    # 設定値の定義（現在 exec.py からは未使用）
+├── test_multiplication.py       # テストファイル
+├── README.md                    # このファイル
+└── fonts/                       # フォントディレクトリ
+    └── GenShinGothic-Monospace-Medium.ttf  # 源真ゴシック（SIL Open Font License）
 ```
 
 ## 必要な環境
@@ -63,14 +66,14 @@ pip install PyQt5 reportlab
 - Python 3.7以上
 - PyQt5
 - reportlab
-- 日本語フォント（HeiseiKakuGo-W5）
+- 日本語フォント（同梱の源真ゴシック等幅 `fonts/GenShinGothic-Monospace-Medium.ttf`）
 
 ## 使用方法
 
 ### 基本的な使い方
 
 ```bash
-python exec_refactored.py
+python exec.py
 ```
 
 1. アプリケーションを起動
@@ -167,12 +170,11 @@ num_rows = (num_questions + num_cols - 1) // num_cols  # 切り上げ除算
 
 ## 今後の改善案
 
-- [ ] 答え付きPDFの生成機能
-- [ ] 問題の難易度設定機能
-- [ ] 複数ページ対応
-- [ ] 他の演算（足し算、引き算）への対応
-- [ ] 設定画面の追加
-- [ ] ダークモード対応
+- [x] 答え付きPDFの生成機能
+- [x] 複数ページ対応
+- [x] 問題の難易度設定機能（Web版）
+- [x] 他の演算（足し算、引き算、割り算）への対応（Web版）
+- [x] 設定画面の追加（Web版）
 
 ## ライセンス
 

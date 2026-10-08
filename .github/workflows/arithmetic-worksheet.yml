@@ -1,0 +1,56 @@
+name: arithmetic-worksheet
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'arithmetic-worksheet/**'
+      - '.github/workflows/arithmetic-worksheet.yml'
+  pull_request:
+    paths:
+      - 'arithmetic-worksheet/**'
+      - '.github/workflows/arithmetic-worksheet.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: arithmetic-worksheet
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm test
+
+  deploy:
+    # master への反映時だけ GitHub Pages に公開する
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/master'
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+      - name: 公開するファイルだけをまとめる
+        run: |
+          mkdir -p _site
+          cp -r arithmetic-worksheet/index.html arithmetic-worksheet/style.css arithmetic-worksheet/js _site/
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4
