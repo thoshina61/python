@@ -2,9 +2,9 @@
 
 九九の問題を自動生成してPDFファイルとして出力するPyQt5アプリケーションです。
 
-> **Web版があります:** 四則演算・段の指定・虫食い算などに対応したブラウザ版の
-> 「計算プリント」を、よりみちプリントで公開しています。インストール不要で使えるので、配布にはそちらをおすすめします。
-> https://print.yorimichi-kobo.com/sansu/keisan/
+> **Web版があります:** 四則演算・段の指定・虫食い算などに対応したブラウザ版を
+> [よりみちプリント「計算プリント」](https://print.yorimichi-kobo.com/sansu/keisan/)で公開しています。
+> インストール不要で使えるので、プリントの作成・印刷にはそちらをおすすめします。
 
 ## 機能
 
@@ -38,7 +38,7 @@
    - エッジケースのテスト
 
 5. **設定の外部化**
-   - 設定ファイル（config.py）の分離
+   - 設定値を `Config` クラスに集約（`config.py` は現在未使用）
    - 設定値の管理向上
 
 ### ファイル構成
@@ -74,6 +74,7 @@ pip install PyQt5 reportlab
 ### 基本的な使い方
 
 ```bash
+cd multiplication
 python exec.py
 ```
 
@@ -84,7 +85,7 @@ python exec.py
 
 ### 設定のカスタマイズ
 
-`config.py`ファイルを編集することで、以下の設定を変更できます：
+`exec.py` 内の `Config` クラスを編集することで、以下の設定を変更できます（`config.py` は現在 `exec.py` から読み込まれていないため、編集しても反映されません）：
 
 - フォント設定
 - レイアウト設定（マージン、問題配置）
@@ -93,12 +94,14 @@ python exec.py
 ## テストの実行
 
 ```bash
+cd multiplication
 python -m unittest test_multiplication.py
 ```
 
 または
 
 ```bash
+cd multiplication
 python test_multiplication.py
 ```
 
@@ -130,8 +133,8 @@ def _validate_input(self) -> Optional[int]:
         if num_questions <= 0:
             self._show_error_message("問題数は1以上の数値を入力してください。")
             return None
-        if num_questions > 100:
-            self._show_error_message("問題数は100以下にしてください。")
+        if num_questions > 1000:
+            self._show_error_message("問題数は1000以下にしてください。")
             return None
         return num_questions
     except ValueError:
