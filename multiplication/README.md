@@ -2,8 +2,10 @@
 
 九九の問題を自動生成してPDFファイルとして出力するPyQt5アプリケーションです。
 
-> **Web版があります:** 四則演算・段の指定・虫食い算などに対応したブラウザ版を
-> [`../arithmetic-worksheet/`](../arithmetic-worksheet/) で公開しています。インストール不要で使えるので、配布にはそちらをおすすめします。
+> **Web版があります:** 四則演算・段の指定・虫食い算などに対応したブラウザ版
+> 「さんすうプリントメーカー」を公開しています。インストール不要で使えるので、配布にはそちらをおすすめします。
+> - ツール: https://yorimichi-kobo.github.io/sansu-print/
+> - ソースコード: https://github.com/yorimichi-kobo/sansu-print
 
 ## 機能
 
