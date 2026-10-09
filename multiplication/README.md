@@ -2,6 +2,10 @@
 
 九九の問題を自動生成してPDFファイルとして出力するPyQt5アプリケーションです。
 
+> **Web版があります:** 四則演算・段の指定・虫食い算などに対応したブラウザ版を
+> [よりみちプリント「計算プリント」](https://print.yorimichi-kobo.com/sansu/keisan/)で公開しています。
+> インストール不要で使えるので、プリントの作成・印刷にはそちらをおすすめします。
+
 ## 機能
 
 - 指定した問題数の掛け算問題をPDFで作成
@@ -34,20 +38,20 @@
    - エッジケースのテスト
 
 5. **設定の外部化**
-   - 設定ファイル（config.py）の分離
+   - 設定値を `Config` クラスに集約（`config.py` は現在未使用）
    - 設定値の管理向上
 
 ### ファイル構成
 
 ```
 multiplication/
-├── exec.py                      # 元のコード
-├── exec_refactored.py          # リファクタリング済みメインファイル
-├── config.py                   # 設定ファイル
-├── test_multiplication.py      # テストファイル
-├── README.md                   # このファイル
-└── fonts/                      # フォントディレクトリ
-    └── GenShinGothic-Monospace-Medium.ttf
+├── exec.py                      # メインファイル（GUI・PDF生成）
+├── exec_original.py             # リファクタリング前の元コード（参考用）
+├── config.py                    # 設定値の定義（現在 exec.py からは未使用）
+├── test_multiplication.py       # テストファイル
+├── README.md                    # このファイル
+└── fonts/                       # フォントディレクトリ
+    └── GenShinGothic-Monospace-Medium.ttf  # 源真ゴシック（SIL Open Font License）
 ```
 
 ## 必要な環境
@@ -63,14 +67,15 @@ pip install PyQt5 reportlab
 - Python 3.7以上
 - PyQt5
 - reportlab
-- 日本語フォント（HeiseiKakuGo-W5）
+- 日本語フォント（同梱の源真ゴシック等幅 `fonts/GenShinGothic-Monospace-Medium.ttf`）
 
 ## 使用方法
 
 ### 基本的な使い方
 
 ```bash
-python exec_refactored.py
+cd multiplication
+python exec.py
 ```
 
 1. アプリケーションを起動
@@ -80,7 +85,7 @@ python exec_refactored.py
 
 ### 設定のカスタマイズ
 
-`config.py`ファイルを編集することで、以下の設定を変更できます：
+`exec.py` 内の `Config` クラスを編集することで、以下の設定を変更できます（`config.py` は現在 `exec.py` から読み込まれていないため、編集しても反映されません）：
 
 - フォント設定
 - レイアウト設定（マージン、問題配置）
@@ -89,12 +94,14 @@ python exec_refactored.py
 ## テストの実行
 
 ```bash
+cd multiplication
 python -m unittest test_multiplication.py
 ```
 
 または
 
 ```bash
+cd multiplication
 python test_multiplication.py
 ```
 
@@ -126,8 +133,8 @@ def _validate_input(self) -> Optional[int]:
         if num_questions <= 0:
             self._show_error_message("問題数は1以上の数値を入力してください。")
             return None
-        if num_questions > 100:
-            self._show_error_message("問題数は100以下にしてください。")
+        if num_questions > 1000:
+            self._show_error_message("問題数は1000以下にしてください。")
             return None
         return num_questions
     except ValueError:
@@ -167,12 +174,11 @@ num_rows = (num_questions + num_cols - 1) // num_cols  # 切り上げ除算
 
 ## 今後の改善案
 
-- [ ] 答え付きPDFの生成機能
-- [ ] 問題の難易度設定機能
-- [ ] 複数ページ対応
-- [ ] 他の演算（足し算、引き算）への対応
-- [ ] 設定画面の追加
-- [ ] ダークモード対応
+- [x] 答え付きPDFの生成機能
+- [x] 複数ページ対応
+- [x] 問題の難易度設定機能（Web版）
+- [x] 他の演算（足し算、引き算、割り算）への対応（Web版）
+- [x] 設定画面の追加（Web版）
 
 ## ライセンス
 
